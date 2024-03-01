@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with GPT</title>
+    <style>
+        .hljs {
+            display: block;
+            overflow-x: auto;
+            padding: 0.5em;
+            color: #abb2bf;
+            background: #282c34; /* Dark background for better contrast */
+        }
+        /* Style for the language label on the top-right, similar to the "JAVA" label */
+        .language-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 2px 6px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+       .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            position: relative;
+            display: block;
+            width: fit-content;
+            max-width: 80%;
+        }
+
+        .user {
+            background-color: #0078d7; /* Blue color for user messages */
+            color: white;
+            align-self: flex-end;
+        }
+
+        .assistant {
+            background-color: #1e1e1e; /* Dark background for assistant messages */
+            color: #dcdcdc;
+            align-self: flex-start;
+        }
+
+        .username {
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: absolute;
+            top: -1.5em;
+        }
+
+        .user .username {
+            left: 0;
+            color: #0078d7; /* Same as user message background */
+        }
+
+        .assistant .username {
+            left: 0;
+            color: #1e1e1e; /* Same as assistant message background */
+        }
+
+        .copyButton {
+            position: absolute;
+            top: 5px; 
+            right: 5px; 
+            border: none;
+            background: rgba(0, 0, 0, 0.3); /* Slightly transparent black */
+            color : white;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 0; /* Square corners */
+            text-transform: uppercase; /* Capital letters */
+            font-size: 0.75em; /* Smaller text */
+        }
+        .copyButton:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .codeBlock {
+            position: relative;
+            background: #282c34;
+            padding: 10px;
+            margin-bottom: 10px; /* 与其他元素的间距 */
+            border-radius: 4px; 
+        }
+    
+        pre code {
+            display: block; /* Ensure block level display for code element */
+            overflow-x: auto;
+            padding: 0.5em;
+            border-radius: 4px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #80c46028;
+            color: white;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            margin: 0 0 20px 0;
+            padding: 10px;
+            background-color: #253545;
+            border-radius: 5px;
+        }
+        #input-area {
+            display: flex;
+            padding: 10px;
+            background-color: rgba(13, 9, 57, 0.733);
+        }
+        #input-area button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #7fdbca;
+            color: black;
+            cursor: pointer;
+            position: relative; /* Default position should be relative */
+            transition: all 0.3s; 
+        }
+        #input-area button:hover {
+            background-color: #58c6a1;
+        }
+        #input-area input {
+            flex-grow: 1;
+            padding: 10px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+        }
+        #buttons-container {
+            position: relative;
+            /* 按钮容器将使用flex布局来使按钮并排 */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;/* 按钮靠右对齐 */
+        }
+        #buttons-container:hover #send-button {
+            /* 鼠标未悬停时，'Send message' 按钮显示 */
+            transition: all 0.3s;
+        }
+        #buttons-container:hover #fetchGPTSuggestion {
+            /* 鼠标悬停时显示 'Get GPT Suggestions' 按钮，并排显示 */
+            display: block; /* 显示按钮 */
+            opacity: 1;
+        }
+        #fetchGPTSuggestion {
+            /* 默认不显示 'Get GPT Suggestions' 按钮 */
+            display: none;
+            position: absolute; /* 绝对定位，以便我们可以将其放置在 'Send message' 按钮的上方 */
+            bottom: 100%; /* 将 'Get GPT Suggestions' 按钮放置在 'Send message' 按钮的上方 */
+            right: 0; /* 靠右对齐 */
+            transition: all 0.3s;
+        }
+        #input-area button.default {
+            position: relative; /* The default button should stay in place */
+            bottom: auto; /* Reset any specific positioning */
+            align-items: flex-end;/* 按钮靠右对齐 */
+        }
+
+        #input-area button.non-default {
+            position: absolute; /* The non-default button will be absolutely positioned */
+            bottom: 100%; /* Move the non-default button above the default */
+            align-items: flex-end;/* 按钮靠右对齐 */
+        }
+        .chat-button {
+            padding: 10px 20px;
+            min-width: 200px; /* 或者你期望的最小宽度 */
+            border: none;
+            border-radius: 4px;
+            background-color: #7fdbca;
+            color: black;
+            cursor: pointer;
+            position: relative; /* 默认位置应为相对 */
+            transition: all 0.3s;
+        }
+
+        .chat-button:hover {
+            background-color: #58c6a1;
+        }
+
+        #settings-panel {
+            position: fixed;
+            top: 20px; /* 调整为所需的距顶部的距离 */
+            right: 20px; /* 调整为所需的距右边的距离 */
+            z-index: 1000; /* 确保设置面板在其他元素之上 */
+        }
+
+        #open-settings {
+            /* 设置按钮的样式 */
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            display: block;
+            margin-bottom: 8px; /* 与设置对话框的间距 */
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #open-settings:hover {
+            background-color: #0056a3; /* Darker shade for hover state */
+        }
+
+        /* Settings Dialog Style */
+        #settings-dialog {
+            /* 设置对话框的样式 */
+            display: none; /* 默认不显示 */
+            position: absolute;
+            top: 40px; /* 设置按钮高度加间距 */
+            right: 0;
+            width: 300px; /* 宽度可根据需要调整 */
+            background-color: #282c34; /* 对话框的背景颜色 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 16px;
+        }
+
+        #settings-dialog input[type='text'] {
+            width: calc(100% - 40px); /* Full width minus padding */
+            padding: 10px;
+            margin-bottom: 10px; /* Space between input fields */
+            border: 1px solid #555; /* Slightly lighter border for the input */
+            border-radius: 4px;
+            background-color: #333;
+            color: white;
+        }
+
+        #settings-dialog input[type='text']::placeholder {
+            color: #bbb;
+        }
+
+        #settings-dialog #settings-save {
+            width: calc(100% - 19px);
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #0078d7;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #settings-dialog #settings-save:hover {
+            background-color: #0056a3;
+        }
+    </style>
+</head>
+<body>
+    <div id="settings-panel">
+        <button id="open-settings">Settings</button>
+        <div id="settings-dialog" style="display: none;">
+            <input type="text" id="settings-apiBaseUrl" placeholder="API Base URL">
+            <input type="text" id="settings-apiKey" placeholder="API Key">
+            <input type="text" id="settings-model" placeholder="Model">
+            <button id="settings-save">Save Settings</button>
+        </div>
+    </div>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <div id="input-area">
+            <input type="text" id="message-input" placeholder="Type a message..." />
+            <div id="buttons-container">
+                <button id="send-button" class="chat-button">Send message</button>
+                <button id="fetchGPTSuggestion" class="chat-button">Get GPT Suggestions</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const vscode = acquireVsCodeApi();
+            const sendButton = document.getElementById('send-button');
+            const fetchGPTSuggestionButton = document.getElementById('fetchGPTSuggestion');
+            const buttonsContainer = document.getElementById('buttons-container');
+            const input = document.getElementById('message-input');
+
+            let defaultButton = 'send'; // 初始默认按钮是“Send Message”
+
+            // 功能：更新按钮显示状态
+            function updateButtonVisibility() {
+                // Reset classes first
+                sendButton.classList.remove('default', 'non-default');
+                fetchGPTSuggestionButton.classList.remove('default', 'non-default');
+                if (defaultButton === 'send') {
+                    sendButton.classList.add('default');
+                    fetchGPTSuggestionButton.classList.add('non-default');
+                    buttonsContainer.prepend(sendButton);
+                } else {
+                    sendButton.classList.add('non-default');
+                    fetchGPTSuggestionButton.classList.add('default');
+                    buttonsContainer.prepend(fetchGPTSuggestionButton);
+                }
+            }
+
+            // 初始更新按钮状态
+            updateButtonVisibility();
+
+            sendButton.addEventListener('click', () => {
+                const input = document.getElementById('message-input');
+                const message = input.value;
+                input.value = ''; // 清空输入框
+                if(message) {
+                    vscode.postMessage({
+                        command: 'sendMessageToGPT',
+                        text: message
+                    });
+                }
+                // 切换按钮显示
+                defaultButton = 'send'; // 更新默认按钮为“Send Message”
+                updateButtonVisibility();
+            });
+
+            fetchGPTSuggestionButton.addEventListener('click', () => {
+                vscode.postMessage({
+                    command: 'getGPTSuggestion'
+                });
+                // 切换按钮显示
+                defaultButton = 'fetch'; // 更新默认按钮为“Get GPT Suggestion”
+                updateButtonVisibility();
+            });
+
+            // 添加鼠标悬停在按钮容器上的事件监听器来处理按钮显示
+            buttonsContainer.addEventListener('mouseover', () => {
+                // 当鼠标悬停时，总是显示非默认按钮
+                if (defaultButton === 'send') {
+                    fetchGPTSuggestionButton.style.display = 'block';
+                } else {
+                    sendButton.style.display = 'block';
+                }
+            });
+
+            // 添加鼠标离开按钮容器的事件监听器来隐藏非默认按钮
+            buttonsContainer.addEventListener('mouseout', () => {
+                // 当鼠标移开时，仅显示默认按钮
+                if (defaultButton === 'send') {
+                    fetchGPTSuggestionButton.style.display = 'none';
+                } else {
+                    sendButton.style.display = 'none';
+                }
+            });
+
+            // 事件监听器，以便在按下 Enter 键时触发默认按钮的点击事件
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    // 检查当前默认按钮是哪一个，然后触发对应的点击事件
+                    if (defaultButton === 'send') {
+                        sendButton.click();
+                    } else if (defaultButton === 'fetch') {
+                        fetchGPTSuggestionButton.click();
+                    }
+                }
+            });
+            // 获取设置按钮和对话框元素
+            const openSettingsButton = document.getElementById('open-settings');
+            const settingsDialog = document.getElementById('settings-dialog');
+            const saveSettingsButton = document.getElementById('settings-save');
+
+            // 处理打开设置对话框的点击事件
+            openSettingsButton.addEventListener('click', () => {
+                settingsDialog.style.display = 'block';
+            });
+
+            // 处理保存设置的点击事件
+            saveSettingsButton.addEventListener('click', () => {
+                const apiBaseUrl = document.getElementById('settings-apiBaseUrl').value;
+                const apiKey = document.getElementById('settings-apiKey').value;
+                const model = document.getElementById('settings-model').value;
+
+                // 发送设置到后端
+                vscode.postMessage({
+                    command: 'saveSettings',
+                    settings: { apiBaseUrl, apiKey, model }
+                });
+
+                // 关闭设置对话框
+                settingsDialog.style.display = 'none';
+            });
+
+        });
+
+        function processContent(content) {
+            const fragment = document.createDocumentFragment();
+            const codeRegexWithLang = /```(\w+)?\n([\s\S]*?)```/g;
+            let lastIndex = 0;
+            let match;
+
+            while ((match = codeRegexWithLang.exec(content)) !== null) {
+                const textBeforeCode = content.slice(lastIndex, match.index);
+                if (textBeforeCode) {
+                    fragment.appendChild(document.createTextNode(textBeforeCode));
+                }
+
+                const codeBlockWrapper = document.createElement('div');
+                codeBlockWrapper.classList.add('codeBlockWrapper');
+
+                const lang = match[1];
+
+                const codeBlock = document.createElement('pre');
+                codeBlock.classList.add('codeBlock');
+
+                const codeContent = document.createElement('code');
+                if (lang) {
+                    const languageLabel = document.createElement('div');
+                    languageLabel.classList.add('language-label');
+                    languageLabel.textContent = lang.toUpperCase(); // Set the language text
+                    codeBlock.appendChild(languageLabel); // Append to the code block, not the wrapper
+                }
+
+                // Create and add the copy button
+                const copyButton = document.createElement('button');
+                copyButton.classList.add('copyButton');
+                copyButton.textContent = 'Copy';
+                copyButton.onclick = function() {
+                    navigator.clipboard.writeText(codeContent.textContent).then(() => {
+                    console.log('Code copied to clipboard!');
+                    copyButton.textContent = 'Copied!';
+                    setTimeout(() => copyButton.textContent = 'Copy', 2000); // Change back after 2 seconds
+                    }).catch(err => {
+                        console.error('Could not copy text: ', err);
+                    });
+                };
+                // Append the copy button to the code block
+                
+
+                codeContent.textContent = match[2];
+                codeBlock.appendChild(codeContent);
+                hljs.highlightBlock(codeContent); // Apply syntax highlighting
+                codeBlock.appendChild(copyButton);
+
+                codeBlockWrapper.appendChild(codeBlock);
+                fragment.appendChild(codeBlockWrapper);
+
+                lastIndex = codeRegexWithLang.lastIndex;
+            }
+
+            const remainingText = content.slice(lastIndex);
+            if (remainingText) {
+                fragment.appendChild(document.createTextNode(remainingText));
+            }
+
+            return fragment;
+        }
+
+        function createMessageElement(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', role === 'user' ? 'user' : 'assistant');
+
+            const usernameDiv = document.createElement('div');
+            usernameDiv.classList.add('username');
+            usernameDiv.textContent = role === 'user' ? 'You' : 'ChatGPT';
+            messageDiv.appendChild(usernameDiv);
+
+            const contentFragment = processContent(content);
+            messageDiv.appendChild(contentFragment);
+
+            return messageDiv;
+        }
+
+        window.addEventListener('message', event => {
+            const message = event.data; // Data sent from the extension
+            const messagesContainer = document.getElementById('messages'); // The container for messages
+
+            switch (message.command) {
+                case 'showGptSuggestion':
+                    //messagesContainer.innerHTML = ''; // Clear previous content
+                    message.content.forEach(msg => {
+                        // Create message div
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        // Add username label
+                        const usernameDiv = document.createElement('div');
+                        usernameDiv.classList.add('username');
+                        if (msg.role === 'user') {
+                            messageDiv.classList.add('user');
+                            usernameDiv.textContent = 'You';
+                        }else if (msg.role === 'assistant') {
+                            messageDiv.classList.add('assistant');
+                            usernameDiv.textContent = 'ChatGPT';
+                        }
+                        messageDiv.appendChild(usernameDiv);
+                        // Check if the message contains code
+                        const content = msg.content;
+                        const codeRegex = /```[\s\S]*?```/g;
+                        let lastIndex = 0;
+                        let match;
+
+                        // Iterate over all code blocks in the message content
+                        while ((match = codeRegex.exec(content)) !== null) {
+                            // Add text before the code block
+                            const text = content.slice(lastIndex, match.index);
+                            if (text) {
+                                messageDiv.appendChild(document.createTextNode(text));
+                            }
+                            // Create a code block element
+                            const codeBlock = document.createElement('div');
+                            codeBlock.classList.add('codeBlock');
+                            codeBlock.textContent = match[0].slice(3, -3); // Remove the backticks
+                            messageDiv.appendChild(codeBlock);
+
+                            lastIndex = codeRegex.lastIndex;
+                        }
+                        // Add any remaining text after the last code block
+                        const remainingText = content.slice(lastIndex);
+                        if (remainingText) {
+                            messageDiv.appendChild(document.createTextNode(remainingText));
+                        }
+
+                        messagesContainer.appendChild(messageDiv);
+                    });
+                    // Scroll to the bottom to show latest message
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    break;
+
+                case 'displayMessage':
+                    const messageDiv = createMessageElement(message.role, message.content);
+                    messagesContainer.appendChild(messageDiv);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    break;
+
+                }
+        });
+    </script>
+</body>
+</html>
