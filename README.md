@@ -43,10 +43,6 @@ Initial release of ...
 
 Fixed issue #.
 
-### 1.1.0
-
-Added features X, Y, and Z.
-
 ---
 
 ## Following extension guidelines
