@@ -1,67 +1,73 @@
-# gptint README
+<p align="center">
+  <img src="/img/logo.jpg" alt="logo">
+</p>
 
-This is the README for your extension "gptint". After writing up a brief description, we recommend including the following sections.
+# <p align="center"><strong>GPT Int (GPT Interaction for VSCode)</strong><br></p>
 
-## Features
+## <p align="center">使用GPT Int插件可以提升你的编程体验。运行这个插件，你就可以让GPT来生成高质量代码🚀 ，又或者简化你的代码，解释复杂的代码，进行代码补全操作等，一切都不费吹灰之力🤖💻。</p>
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+<p align="center">
+  <a href="README.md">简体中文</a> /
+  <a href="readmex.md">English</a>
+</p>
 
-For example if there is an image subfolder under your extension project workspace:
+## 提前准备
+VS Code
 
-\!\[feature X\]\(images/feature-x.png\)
+OpenAI APIKey
+## 开始使用
+1.下载插件，并安装。然后运行插件。
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+2.按ctrl+shift+p并输入命令"Show Panel"，便可打开与GPT的交互面板。
 
-## Requirements
+3.点击Setting按钮，完成设置，便可正常使用插件。
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+<p align="center">
+  <img src="/img/setting.gif" alt="logo">
+</p>
 
-## Extension Settings
+## 插件设置
+* `gptint.apiBaseUrl`: GPT API的base URL(默认https://api.openai.com).
+* `gptint.apiKey`: 你的OpenAI API key.
+* `gptint.model`: 你想使用的模型(e.g., gpt-4-1106-preview).
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
 
-For example:
 
-This extension contributes the following settings:
+⚠️由于对话每次都将历史消息一并发送，因此请留意API消耗。
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## 插件功能
+### 代码补全
+只需要在VSCode编辑器里打出注释，在注释里描述你的需求，并点击"Get GPT Suggestion"按钮，GPT Int插件就会尽可能地满足你，帮你补全完整的代码。
+### 代码解释
+只需要选中你不懂的代码，并点击"Get GPT Suggestion"按钮，GPT就会解答你的疑惑，为你讲解代码的功能和逻辑等。
+### 简化代码
+插件支持与GPT进行长对话。如果你感觉已有的某些代码是冗余的，你可以在聊天框里告诉GPT，并点击"Send Message"按钮。GPT会竭尽所能地为你重构代码。
+### 支持自定义Prompt
+你可以提前设定一些Prompt，比如告诉GPT接下来只需要输出代码等Prompt。
+### 更多功能
+更多功能正在开发中🚀...如果你有更好的想法，请在Issues里联系作者。
 
-## Known Issues
+## 已知问题
+⚠️由于某些特殊原因，使用插件后记得关闭插件后再关闭VSCode，否则下次启动会遇到一些特殊问题。（问题待修复）
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
+## 开发日志
 
 ### 1.0.0
-
-Initial release of ...
-
+初始版本刚刚上线，完成了一些基本功能，还有很多功能待开发
 ### 1.0.1
+修复了一些由于VSCode的WebPage内存问题而导致的BUG。现在长轮次对话不会导致编辑器崩溃了。
 
-Fixed issue #.
+## 额外事项
 
----
+<<<<<<< HEAD
+在网络被严格限制的情况下，你可能在VSCode中需要一些额外的配置才能正常使用插件。
 
-## Following extension guidelines
+例如：
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+```
+proxies = {
+    "http": "http://127.0.0.1:7890",
+    "https": "http://127.0.0.1:7890",
+}
+#请替换为你的实际代理IP
+```
