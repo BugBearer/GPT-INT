@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/img/logo.jpg" alt="logo">
+  <img src="/src/img/logo.jpg" alt="logo">
 </p>
 
 # <p align="center"><strong>GPT Int (GPT Interaction for VSCode)</strong><br></p>
@@ -23,7 +23,7 @@ OpenAI APIKey
 3.点击Setting按钮，完成设置，便可正常使用插件。
 
 <p align="center">
-  <img src="/img/setting.gif" alt="logo">
+  <img src="/src/img/setting.gif" alt="logo">
 </p>
 
 ## 插件设置
